@@ -8,7 +8,7 @@
   <style>
     body {
       margin: 0;
-      overflow: visible;
+      overflow: hidden;
       color: white;
       font-family: 'DM Sans', sans-serif;
       display: flex;
@@ -16,8 +16,10 @@
       align-items: center;
       height: 100vh;
       background-color: black;
+      position: relative;
     }
 
+    /* Three.js Canvas - Hide on mobile */
     canvas {
       display: block;
       position: absolute;
@@ -26,6 +28,12 @@
       width: 100%;
       height: 100%;
       z-index: -1;
+    }
+
+    @media (max-width: 768px) {
+      #three-canvas {
+        display: none; /* Hide Three.js on mobile */
+      }
     }
 
     .overlay {
@@ -46,8 +54,8 @@
     }
 
     .title-svg {
-      width: 100%;  
-      height: 100%; 
+      width: 100%;
+      height: 100%;
     }
 
     .player {
@@ -59,105 +67,57 @@
       padding: 20px;
       border-radius: 10px;
     }
-    /* Mobile flicker effect */
-    .flicker-effect {
+
+    /* Flickering effect on mobile */
+    .flicker-light {
       position: absolute;
-      top: 0;
-      left: 0;
       width: 100%;
       height: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      opacity: 0;
       pointer-events: none;
-      z-index: 1;
-      display: block;
-    }
-
-    .flicker-effect::before {
-      content: '';
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      color: white;
-      background-color: transparent;
-      border-radius: 50%;
-      animation: flicker 0.5s infinite;
+      animation: flicker 1.5s infinite alternate;
     }
 
     @keyframes flicker {
-      0% {
-        top: 10%;
-        left: 20%;
-        opacity: 0;
-      }
-      25% {
-        top: 30%;
-        left: 50%;
-        opacity: 1;
-      }
-      50% {
-        top: 60%;
-        left: 70%;
-        opacity: 0;
-      }
-      75% {
-        top: 80%;
-        left: 90%;
-        opacity: 1;
-      }
-      100% {
-        top: 40%;
-        left: 30%;
-        opacity: 0;
-      }
+      0% { opacity: 0.1; }
+      30% { opacity: 0.2; }
+      50% { opacity: 0.05; }
+      70% { opacity: 0.15; }
+      100% { opacity: 0.1; }
     }
 
-    /* Hide the flickering effect on desktop */
+    /* Only show flicker on mobile */
     @media (min-width: 769px) {
-      .flicker-effect {
+      .flicker-light {
         display: none;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .overlay {
-        flex-direction: column;
-        gap: 20px;
       }
     }
   </style>
 </head>
 <body>
-  <body>
-  <!-- Flicker effect container for mobile -->
-  <div class="flicker-effect"></div>
-  <div></div>
-    <div></div>
-      <div></div>
-        <div></div>
-        
+
+  <!-- Flicker effect for mobile -->
+  <div class="flicker-light"></div>
+
   <canvas id="three-canvas"></canvas>
 
   <div class="overlay">
     <div class="title-section">
       <svg class="title-svg" viewBox="0 0 500 200" preserveAspectRatio="none">
-        <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="white" font-family="DM Sans, sans-serif" font-weight="300"
+        <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="white"
+              font-family="DM Sans, sans-serif" font-weight="300"
               textLength="100%" lengthAdjust="spacingAndGlyphs" font-size="25vh">
           DIGITAL BOILER ROOM
         </text>
       </svg>
     </div>
-    
+
     <div class="player">
       <div id="player"></div>
     </div>
-  
   </div>
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js"
-      }
-    }
-  </script>
+
  <script src="https://unpkg.com/webamp@1.5.0/built/webamp.bundle.min.js"></script>
  <script src="https://unpkg.com/butterchurn@2.6.7/lib/butterchurn.min.js"></script>
  <script src="https://unpkg.com/butterchurn-presets@2.4.7/lib/butterchurnPresets.min.js"></script>
@@ -238,8 +198,12 @@ async function loadWebamp() {
 loadWebamp();
 </script>
 <script>
-  if (window.innerWidth <= 768) { 
-    document.write('<script type="module" src="/render.js"><\/script>');
+  // Load Three.js only on desktop
+  if (window.innerWidth > 768) {
+    const script = document.createElement("script");
+    script.src = "/render.js";
+    script.type = "module";
+    document.body.appendChild(script);
   }
 </script>
 </body>
