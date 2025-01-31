@@ -6,78 +6,54 @@ const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('thre
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Raumgeometrie mit PBR-Texturen für die Wände
-const roomSize = 200;  // Noch größerer Raum
 const textureLoader = new THREE.TextureLoader();
+const loadTexture = (path) => {
+  const tex = textureLoader.load(path);
+  tex.minFilter = THREE.LinearFilter;
+  return tex;
+};
 
-// PBR-Texturen für die Fliesen
-const albedo = textureLoader.load('texture/gross-dirty-tiles_albedo.png'); // Albedo-Textur (Farbe)
-const roughness = textureLoader.load('texture/gross-dirty-tiles_roughness.png'); // Rauheits-Textur
-const metalness = textureLoader.load('https://example.com/tile_metallic.png'); // Metallizitäts-Textur
-
-// Texturgröße anpassen durch Skalierung (kleiner machen)
-albedo.minFilter = THREE.LinearFilter;  // Verhindert MipMap Probleme
-roughness.minFilter = THREE.LinearFilter;
-metalness.minFilter = THREE.LinearFilter;
-
-// Material für die Fliesen (reflektierender gemacht)
+// PBR-Texturen
 const tileMaterial = new THREE.MeshStandardMaterial({
-  map: albedo,
-  roughnessMap: roughness,
-  metalnessMap: metalness,
-  metalness: 1.9, // Erhöht für mehr Reflektion
-  roughness: 0.2, // Glattere Oberfläche
+  map: loadTexture('texture/gross-dirty-tiles_albedo.png'),
+  roughnessMap: loadTexture('texture/gross-dirty-tiles_roughness.png'),
+  metalnessMap: loadTexture('texture/gross-dirty-tiles_metallic.png'),
+  metalness: 1,
+  roughness: 0.2,
   side: THREE.BackSide
 });
 
 // Raumgeometrie
-const geometry = new THREE.BoxGeometry(roomSize, roomSize, roomSize);
-const room = new THREE.Mesh(geometry, tileMaterial);
+const room = new THREE.Mesh(new THREE.BoxGeometry(200, 200, 200), tileMaterial);
 scene.add(room);
 
-// Reduziere Umgebungslicht für dunkleren Raum
-const ambientLight = new THREE.AmbientLight(0xFFFFFF, 0.03); // Sehr schwaches Umgebungslicht
-scene.add(ambientLight);
+// Beleuchtung
+scene.add(new THREE.AmbientLight(0xFFFFFF, 0.03));
 
-// Spot Light (rundes Licht von oben)
 const spotLight = new THREE.SpotLight(0xFFFFFF, 0.9, 50, Math.PI / 4, 0.5, 2);
-spotLight.position.set(0, roomSize / 2, 0);  // Direkt oben
+spotLight.position.set(0, 100, 0);
 spotLight.castShadow = true;
 scene.add(spotLight);
 
-// Flackernde Lichter, die den Raum schwach beleuchten (größer und sichtbarer)
-const flickeringLights = [];
-for (let i = 0; i < 50; i++) { // Mehr flackernde Lichter
-  const light = new THREE.PointLight(0xFFFFFF, Math.random() * 2, roomSize);
-  light.position.set(
-    (Math.random() - 0.5) * roomSize,
-    (Math.random() - 0.5) * roomSize,
-    (Math.random() - 0.5) * roomSize
-  );
-  light.scale.set(200, 200, 200); // Größere Lichter
+// Flackernde Lichter
+const flickeringLights = Array.from({ length: 50 }, () => {
+  const light = new THREE.PointLight(0xFFFFFF, Math.random() * 2, 200);
+  light.position.set(...Array(3).fill().map(() => (Math.random() - 0.5) * 200));
   scene.add(light);
-  flickeringLights.push(light);
-}
+  return light;
+});
 
-// Kameraposition und Bewegung
-camera.position.set(50, 50, 100);
+// Kamerabewegung
 let cameraAngle = 0;
-
 function animate() {
   requestAnimationFrame(animate);
 
-  // Flackernde Lichter
-  flickeringLights.forEach(light => {
-    light.intensity = Math.random() * 3; // Flackernde Intensität
-  });
+  flickeringLights.forEach(light => light.intensity = Math.random() * 3);
 
-  // Kamera sanft bewegen
-  camera.position.x = 50 * Math.cos(cameraAngle);
-  camera.position.z = 50 * Math.sin(cameraAngle);
-  camera.lookAt(0, 0, 0);  // Immer auf den Raum fokussieren
-  cameraAngle += 0.001;
+  camera.position.set(50 * Math.cos(cameraAngle), 50, 50 * Math.sin(cameraAngle));
+  camera.lookAt(0, 0, 0);
+  cameraAngle += 0.005;
 
-  // Rendering der Szene
   renderer.render(scene, camera);
 }
 
@@ -85,7 +61,9 @@ animate();
 
 // Fenstergröße anpassen
 window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  requestAnimationFrame(() => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
 });
