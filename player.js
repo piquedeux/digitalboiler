@@ -8,24 +8,24 @@ const skins = [
   "https://archive.org/cors/windowlicker_202501/hand written.wsz"
 ];
 
+// Hier sind die Songs mit ihren direkten Raw-URLs aus deinem GitHub-Repository
+const songs = [
+  "https://raw.githubusercontent.com/moritzgauss/digitalboiler/main/songs/Snow-Strippers-Just-Your-Doll-_Audio_.mp3",
+  "https://raw.githubusercontent.com/moritzgauss/digitalboiler/main/songs/Another-Song.mp3",  // Beispiel für einen weiteren Song
+  "https://raw.githubusercontent.com/moritzgauss/digitalboiler/main/songs/Yet-Another-Track.mp3", // Beispiel für einen weiteren Song
+  // Weitere Songs hier hinzufügen
+];
+
 async function getRandomSong() {
   try {
-    // GitHub API URL für den Ordner "songs" im Repository
-    const response = await fetch("https://api.github.com/repos/moritzgauss/digitalboiler/contents/songs");
-    if (!response.ok) {
-      throw new Error("Fehler beim Abrufen der Songs: " + response.statusText);
-    }
-    const files = await response.json();
-    const mp3Files = files.filter(file => file.name.endsWith(".mp3"));
-
-    if (mp3Files.length === 0) {
+    if (songs.length === 0) {
       console.warn("Kein Song gefunden, lade Standardtrack.");
       return "songs/default.mp3"; // Fallback-URL für den Standardtrack
     }
 
-    const randomSong = mp3Files[Math.floor(Math.random() * mp3Files.length)];
-    console.log(`🎵 Zufälliger Song: ${randomSong.download_url}`);
-    return randomSong.download_url; // Rückgabe der Raw-URL zum Song
+    const randomSong = songs[Math.floor(Math.random() * songs.length)];
+    console.log(`🎵 Zufälliger Song: ${randomSong}`);
+    return randomSong; // Rückgabe der Raw-URL zum Song
   } catch (error) {
     console.error("Fehler beim Abrufen der Songs:", error);
     return "songs/default.mp3"; // Fallback-URL im Fehlerfall
