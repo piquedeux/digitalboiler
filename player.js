@@ -10,7 +10,7 @@ const skins = [
 
 // Liste der MP3-Dateien im GitHub-Repository
 const songs = [
-  "https://raw.githubusercontent.com/moritzgauss/digitalboiler/main/songs/Snow-Strippers-Just-Your-Doll-_Audio_.mp3",
+"https://github.com/moritzgauss/digitalboiler/blob/main/songs/Snow-Strippers-Just-Your-Doll-_Audio_.mp3",
   "https://raw.githubusercontent.com/moritzgauss/digitalboiler/main/songs/Another-Song.mp3",  
   "https://raw.githubusercontent.com/moritzgauss/digitalboiler/main/songs/Yet-Another-Track.mp3"
 ];
