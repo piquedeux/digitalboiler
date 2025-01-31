@@ -172,6 +172,12 @@ async function loadWebamp() {
 
 loadWebamp();
 </script>
-<script type="module" src="/render.js"></script>
+<script>
+  if (window.innerWidth <= 768) { 
+    document.write('<script type="module" src="/render-mobile.js"><\/script>');
+  } else { 
+    document.write('<script type="module" src="/render.js"><\/script>');
+  }
+</script>
 </body>
 </html>
