@@ -8,7 +8,7 @@
   <style>
     body {
       margin: 0;
-      overflow: hidden;
+      overflow: visible;
       color: white;
       font-family: 'DM Sans', sans-serif;
       display: flex;
@@ -73,7 +73,6 @@
 
   <div class="overlay">
     <div class="title-section">
-      <!-- SVG-Titel mit dynamischer Skalierung -->
       <svg class="title-svg" viewBox="0 0 500 200" preserveAspectRatio="none">
         <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="white" font-family="DM Sans, sans-serif" font-weight="300"
               textLength="100%" lengthAdjust="spacingAndGlyphs" font-size="25vh">
@@ -86,7 +85,7 @@
       <div id="player"></div>
     </div>
   </div>
-  <!--<script type="importmap">
+  <script type="importmap">
     {
       "imports": {
         "three": "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js"
@@ -107,7 +106,7 @@ const skins = [
   "https://archive.org/cors/windowlicker_202501/hand%20written.wsz"
 ];
 
-// Songs Playlist
+
 const songs = [
   {
     metaData: { artist: "Snow Strippers", title: "Just Your Doll" },
@@ -126,7 +125,7 @@ const songs = [
   }
 ];
 
-// Preload the skin before applying it
+
 async function loadSkin(url) {
   try {
     const response = await fetch(url, { mode: "cors" });
@@ -161,7 +160,7 @@ async function loadWebamp() {
     }
   });
 
-  // Ensure Webamp is ready before rendering
+
   try {
     await webamp.renderWhenReady(document.getElementById("player"));
     console.log("Webamp loaded successfully!");
@@ -172,6 +171,6 @@ async function loadWebamp() {
 
 loadWebamp();
 </script>
- <!--<script type="module" src="/render.js"></script>-->
+<script type="module" src="/render.js"></script>
 </body>
 </html>
