@@ -8,28 +8,39 @@ const skins = [
   "https://archive.org/cors/windowlicker_202501/hand written.wsz"
 ];
 
-// Hier sind die Songs mit ihren direkten Raw-URLs aus deinem GitHub-Repository
+// Liste der MP3-Dateien im GitHub-Repository
 const songs = [
   "https://raw.githubusercontent.com/moritzgauss/digitalboiler/main/songs/Snow-Strippers-Just-Your-Doll-_Audio_.mp3",
-  "https://raw.githubusercontent.com/moritzgauss/digitalboiler/main/songs/Another-Song.mp3",  // Beispiel für einen weiteren Song
-  "https://raw.githubusercontent.com/moritzgauss/digitalboiler/main/songs/Yet-Another-Track.mp3", // Beispiel für einen weiteren Song
-  // Weitere Songs hier hinzufügen
+  "https://raw.githubusercontent.com/moritzgauss/digitalboiler/main/songs/Another-Song.mp3",  
+  "https://raw.githubusercontent.com/moritzgauss/digitalboiler/main/songs/Yet-Another-Track.mp3"
 ];
 
-async function getRandomSong() {
+// Funktion zum Laden der MP3-Datei als Blob
+async function fetchBlobUrl(mp3Url) {
   try {
-    if (songs.length === 0) {
-      console.warn("Kein Song gefunden, lade Standardtrack.");
-      return "songs/default.mp3"; // Fallback-URL für den Standardtrack
-    }
+    const response = await fetch(mp3Url);
+    if (!response.ok) throw new Error("Fehler beim Laden der Datei.");
 
-    const randomSong = songs[Math.floor(Math.random() * songs.length)];
-    console.log(`🎵 Zufälliger Song: ${randomSong}`);
-    return randomSong; // Rückgabe der Raw-URL zum Song
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
   } catch (error) {
-    console.error("Fehler beim Abrufen der Songs:", error);
-    return "songs/default.mp3"; // Fallback-URL im Fehlerfall
+    console.error("Fehler beim Laden des Songs:", error);
+    return null;
   }
+}
+
+async function getRandomSong() {
+  if (songs.length === 0) {
+    console.warn("Kein Song gefunden, lade Standardtrack.");
+    return "songs/default.mp3"; 
+  }
+
+  const randomSongUrl = songs[Math.floor(Math.random() * songs.length)];
+  console.log(`🎵 Lade zufälligen Song: ${randomSongUrl}`);
+
+  // MP3-Datei als Blob abrufen und URL zurückgeben
+  const blobUrl = await fetchBlobUrl(randomSongUrl);
+  return blobUrl || "songs/default.mp3";  
 }
 
 async function loadWebamp() {
