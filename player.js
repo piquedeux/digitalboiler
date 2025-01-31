@@ -10,25 +10,25 @@ const skins = [
 
 async function getRandomSong() {
   try {
-    const response = await fetch("songs/");
-    const text = await response.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(text, "text/html");
-    const links = [...doc.querySelectorAll("a")]
-      .map(a => a.getAttribute("href"))
-      .filter(name => name.endsWith(".mp3"));
+    // GitHub API URL für den Ordner "songs" im Repository
+    const response = await fetch("https://api.github.com/repos/moritzgauss/digitalboiler/contents/songs");
+    if (!response.ok) {
+      throw new Error("Fehler beim Abrufen der Songs: " + response.statusText);
+    }
+    const files = await response.json();
+    const mp3Files = files.filter(file => file.name.endsWith(".mp3"));
 
-    if (links.length === 0) {
+    if (mp3Files.length === 0) {
       console.warn("Kein Song gefunden, lade Standardtrack.");
-      return "songs/default.mp3";
+      return "songs/default.mp3"; // Fallback-URL für den Standardtrack
     }
 
-    const randomSong = links[Math.floor(Math.random() * links.length)];
-    console.log(`🎵 Zufälliger Song: ${randomSong}`);
-    return `songs/${randomSong}`;
+    const randomSong = mp3Files[Math.floor(Math.random() * mp3Files.length)];
+    console.log(`🎵 Zufälliger Song: ${randomSong.download_url}`);
+    return randomSong.download_url; // Rückgabe der Raw-URL zum Song
   } catch (error) {
     console.error("Fehler beim Abrufen der Songs:", error);
-    return "songs/default.mp3";
+    return "songs/default.mp3"; // Fallback-URL im Fehlerfall
   }
 }
 
