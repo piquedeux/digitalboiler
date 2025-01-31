@@ -76,7 +76,8 @@
       position: absolute;
       width: 10px;
       height: 10px;
-      background-color: white;
+      color: white;
+      background-color: transparent;
       border-radius: 50%;
       animation: flicker 0.5s infinite;
     }
@@ -125,12 +126,19 @@
   </style>
 </head>
 <body>
+  <body>
+  <!-- Flicker effect container for mobile -->
+  <div class="flicker-effect"></div>
+  <div></div>
+    <div></div>
+      <div></div>
+        <div></div>
+        
   <canvas id="three-canvas"></canvas>
 
   <div class="overlay">
     <div class="title-section">
       <svg class="title-svg" viewBox="0 0 500 200" preserveAspectRatio="none">
-        <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="white" font-family="DM Sans, sans-serif" font-weight="300"
               textLength="100%" lengthAdjust="spacingAndGlyphs" font-size="25vh">
           DIGITAL BOILER ROOM
         </text>
