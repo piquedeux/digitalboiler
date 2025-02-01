@@ -20,9 +20,9 @@ const roomSize = 100;
 const textureLoader = new THREE.TextureLoader();
 
 // PBR-Texturen
-const albedo = textureLoader.load('texture/gross-dirty-tiles_albedo.png');
-const roughness = textureLoader.load('https://raw.githubusercontent.com/mori77z/beach/refs/heads/main/texture/gross-dirty-tiles_roughness.png');
-const metalness = textureLoader.load('https://raw.githubusercontent.com/mori77z/beach/refs/heads/main/texture/gross-dirty-tiles_metallic.png');
+const albedo = textureLoader.load('https://raw.githubusercontent.com/moritzgauss/digitalboiler/refs/heads/main/texture/gross-dirty-tiles_albedo.png');
+const roughness = textureLoader.load('https://raw.githubusercontent.com/moritzgauss/digitalboiler/refs/heads/main/texture/gross-dirty-tiles_roughness.png');
+const metalness = textureLoader.load('https://raw.githubusercontent.com/moritzgauss/digitalboiler/refs/heads/main/texture/gross-dirty-tiles_metallic.png');
 
 // Material für die Wände
 const tileMaterial = new THREE.MeshStandardMaterial({
