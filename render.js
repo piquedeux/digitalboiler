@@ -1,87 +1,67 @@
 import * as THREE from 'three';
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('three-canvas') });
-renderer.setSize(window.innerWidth, window.innerHeight);  // Set canvas to full screen
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const textureLoader = new THREE.TextureLoader();
-const loadTexture = (path) => {
-  const tex = textureLoader.load(path);
-  tex.minFilter = THREE.LinearFilter;
-  return tex;
-};
+// Orbit Controls
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; // Sanfte Bewegungen
+controls.dampingFactor = 0.05;
+controls.screenSpacePanning = false;
+controls.minDistance = 10;
+controls.maxDistance = 200;
 
-// PBR-Texturen (Adjusted for wall surfaces)
+// Raumgröße & Texturen
+const roomSize = 100;
+const textureLoader = new THREE.TextureLoader();
+
+// PBR-Texturen
+const albedo = textureLoader.load('texture/gross-dirty-tiles_albedo.png');
+const roughness = textureLoader.load('texture/gross-dirty-tiles_roughness.png');
+const metalness = textureLoader.load('texture/gross-dirty-tiles_metallic.png');
+
+// Material für die Wände
 const tileMaterial = new THREE.MeshStandardMaterial({
-  map: loadTexture('texture/gross-dirty-tiles_albedo.png'),
-  roughnessMap: loadTexture('texture/gross-dirty-tiles_roughness.png'),
-  metalnessMap: loadTexture('texture/gross-dirty-tiles_metallic.png'),
-  metalness: 1,
-  roughness: 0.2,
-  side: THREE.FrontSide
+  map: albedo,
+  roughnessMap: roughness,
+  metalnessMap: metalness,
+  metalness: 0.9,
+  roughness: 0.4,
+  side: THREE.BackSide
 });
 
-// Create the walls of the room (6 walls)
-const wallGeometry = new THREE.PlaneGeometry(200, 200); // Planes for walls
-const wallMaterials = Array(6).fill(tileMaterial); // Same material for all walls
+// Raum-Geometrie
+const geometry = new THREE.BoxGeometry(roomSize, roomSize, roomSize);
+const room = new THREE.Mesh(geometry, tileMaterial);
+scene.add(room);
 
-// Create walls (front, back, left, right, top, bottom)
-const walls = [
-  new THREE.Mesh(wallGeometry, wallMaterials[0]), // Front wall
-  new THREE.Mesh(wallGeometry, wallMaterials[1]), // Back wall
-  new THREE.Mesh(wallGeometry, wallMaterials[2]), // Left wall
-  new THREE.Mesh(wallGeometry, wallMaterials[3]), // Right wall
-  new THREE.Mesh(wallGeometry, wallMaterials[4]), // Top wall
-  new THREE.Mesh(wallGeometry, wallMaterials[5]), // Bottom wall
-];
+// Lichtquellen
+const ambientLight = new THREE.AmbientLight(0xFFFFFF, 0.2);
+scene.add(ambientLight);
 
-// Position the walls correctly to form a box
-walls[0].position.set(0, 0, 100); // Front
-walls[1].position.set(0, 0, -100); // Back
-walls[2].rotation.y = Math.PI / 2; walls[2].position.set(100, 0, 0); // Left
-walls[3].rotation.y = Math.PI / 2; walls[3].position.set(-100, 0, 0); // Right
-walls[4].rotation.x = Math.PI / 2; walls[4].position.set(0, 100, 0); // Top
-walls[5].rotation.x = Math.PI / 2; walls[5].position.set(0, -100, 0); // Bottom
+// Kameraposition
+camera.position.set(20, 20, 30);
 
-// Add walls to the scene
-walls.forEach(wall => scene.add(wall));
-
-// Lighting - Flickering light inside the room
-const flickeringLight = new THREE.PointLight(0xFFFFFF, 1, 50);
-flickeringLight.position.set(0, 50, 0); // Place the light inside the room
-scene.add(flickeringLight);
-
-// Set up a camera
-camera.position.set(0, 50, 200); // Position the camera inside the room, looking towards the center
-camera.lookAt(0, 0, 0);
-
-let lightIntensity = 1;
-
-// Flickering effect for the light
-function flickerLight() {
-  lightIntensity = Math.random() * 2; // Random flicker effect
-  flickeringLight.intensity = lightIntensity;
-}
-
-// Animation loop
 function animate() {
   requestAnimationFrame(animate);
 
-  // Flicker light every frame
-  flickerLight();
+  ambientLight.intensity = 0.2 + Math.sin(Date.now() * 0.001) * (0.2 + Math.random() * 0.05);
+
+  // OrbitControls aktualisieren
+  controls.update();
 
   renderer.render(scene, camera);
 }
 
 animate();
 
-// Window resize handler
+// Fenstergröße anpassen
 window.addEventListener('resize', () => {
-  requestAnimationFrame(() => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
 });
