@@ -1,75 +1,95 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-// WebGL-Kompatibilität prüfen
-if (!window.WebGLRenderingContext) {
-  alert("WebGL wird von deinem Gerät nicht unterstützt.");
-}
-
-// Szene, Kamera, Renderer einrichten
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(20, 20, 30);
-
-// Container für das Canvas erstellen
-const container = document.createElement('div');
-container.style.position = 'absolute';
-container.style.top = '0';
-container.style.left = '0';
-container.style.width = '100vw';
-container.style.height = '100vh';
-document.body.appendChild(container);
-
-const renderer = new THREE.WebGLRenderer({ antialias: false }); // AA deaktiviert für Mobile-Performance
-renderer.setPixelRatio(window.devicePixelRatio); // DPR optimieren
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-container.appendChild(renderer.domElement);
+document.body.appendChild(renderer.domElement);
 
-// Orbit Controls (mit Touch-Unterstützung)
+// Orbit Controls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.screenSpacePanning = false;
-controls.minDistance = 5;
-controls.maxDistance = 100;
-controls.enableZoom = true; // Pinch-to-Zoom aktivieren
-controls.enableRotate = true; // Rotation per Touch aktivieren
-controls.enablePan = true; // Verschieben erlauben
+controls.minDistance = 10;
+controls.maxDistance = 200;
 
-// Raumgröße & Texturen
-const roomSize = 50; // Kleinere Szene für bessere mobile Performance
+// Raumgröße
+const roomSize = 100;
 const textureLoader = new THREE.TextureLoader();
 
-// PBR-Texturen
-const albedo = textureLoader.load('https://raw.githubusercontent.com/moritzgauss/digitalboiler/refs/heads/main/texture/gross-dirty-tiles_albedo.png');
-const roughness = textureLoader.load('https://raw.githubusercontent.com/moritzgauss/digitalboiler/refs/heads/main/texture/gross-dirty-tiles_roughness.png');
-const metalness = textureLoader.load('https://raw.githubusercontent.com/moritzgauss/digitalboiler/refs/heads/main/texture/gross-dirty-tiles_metallic.png');
+// Standard-Bump-Textur
+const defaultBumpTexture = textureLoader.load('https://threejs.org/examples/textures/brick_bump.jpg');
 
-// Material für die Wände (leichter für mobile Performance)
-const tileMaterial = new THREE.MeshStandardMaterial({
-  map: albedo,
-  roughnessMap: roughness,
-  metalnessMap: metalness,
-  metalness: 0.6, // Reduziert für bessere Performance
-  roughness: 0.5,
-  side: THREE.BackSide
-});
+// PBR-Texturen laden
+const texturePaths = [
+  'gross-dirty-tiles_albedo.png',
+  'gross-dirty-tiles_roughness.png',
+  'gross-dirty-tiles_metallic.png'
+];
+
+const loadTexture = (path) => {
+  return new Promise((resolve, reject) => {
+    textureLoader.load(
+      path,
+      texture => resolve(texture),
+      undefined,
+      () => reject(`Fehler beim Laden: ${path}`)
+    );
+  });
+};
+
+(async function createRoom() {
+  let albedo, roughness, metalness;
+  try {
+    [albedo, roughness, metalness] = await Promise.all(texturePaths.map(path => loadTexture(`https://raw.githubusercontent.com/moritzgauss/digitalboiler/main/texture/${path}`)));
+  } catch (error) {
+    console.warn(error, 'Nutze Standard-Bump-Textur.');
+  }
+
+  // Material wählen
+  const tileMaterial = new THREE.MeshStandardMaterial({
+    map: albedo || null,
+    roughnessMap: roughness || null,
+    metalnessMap: metalness || null,
+    bumpMap: albedo ? null : defaultBumpTexture,
+    metalness: albedo ? 0.9 : 0.5,
+    roughness: albedo ? 0.4 : 0.7,
+    side: THREE.BackSide
+  });
 
   // Raum-Geometrie
   const room = new THREE.Mesh(new THREE.BoxGeometry(roomSize, roomSize, roomSize), tileMaterial);
   scene.add(room);
 })();
 
-// Lichtquellen
-const ambientLight = new THREE.AmbientLight(0xFFFFFF, 0.3); // Heller für Mobile
+// Lichtquellen mit grünem Flackern
+const ambientLight = new THREE.AmbientLight(0x00ff00, 0.8);
 scene.add(ambientLight);
 
-// Animationsfunktion
+const pointLight = new THREE.PointLight(0xffffff, 1);
+pointLight.position.set(20, 50, 20);
+scene.add(pointLight);
+
+// Kamera-Pivot für sanfte Bewegung
+const pivot = new THREE.Object3D();
+scene.add(pivot);
+pivot.add(camera);
+camera.position.set(20, 0, 30);
+controls.target.set(0, 0, 0);
+
+let time = 0;
+// Animationsschleife
 function animate() {
   requestAnimationFrame(animate);
+  
+  // Grün flackerndes Licht
+  time += 0.05;
+  ambientLight.intensity = 0.4 + Math.sin(time) * 0.4;
 
-  // Leichte Lichtvariation für Dynamik
-  ambientLight.intensity = 0.3 + Math.sin(Date.now() * 0.001) * 0.1;
+  // Kamera-Pivot leicht rotieren für sanfte Bewegung
+  pivot.rotation.y = Math.sin(time * 0.1) * 0.1;
+  pivot.rotation.x = Math.sin(time * 0.05) * 0.05;
 
   controls.update();
   renderer.render(scene, camera);
