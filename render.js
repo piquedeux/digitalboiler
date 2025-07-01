@@ -97,8 +97,13 @@ function animate() {
 animate();
 
 // Fenstergröße anpassen
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
+function setRendererSize() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  renderer.setSize(width, height, false);
+  camera.aspect = width / height;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
+}
+setRendererSize();
+
+window.addEventListener('resize', setRendererSize);
